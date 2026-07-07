@@ -15,8 +15,8 @@ class StudyGroup(base):
     creator_id : Mapped[int] = mapped_column(ForeignKey("users.id"),nullable=False )
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     total_member: Mapped[int]= mapped_column(default=1)
-    latitude: Mapped[float]= mapped_column(nullable=True)
-    longitude: Mapped[float]= mapped_column(nullable=True)
+    lat: Mapped[float]= mapped_column(nullable=False)
+    long: Mapped[float]= mapped_column(nullable=False)
 
 
 

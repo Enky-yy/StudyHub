@@ -9,6 +9,7 @@ from models.user import User
 from models.groups import StudyGroup , Membership
 
 from utils.auth import get_current_user
+from utils.geocode import geocode_address
 
 from schemas.groups import groups , groupDetails
 
@@ -23,11 +24,26 @@ def create_groups(
     db : Session=Depends(get_db),
     current_user :User = Depends(get_current_user)
 ):
-    group_obj = StudyGroup(**group_data.model_dump() , latitude= None, longitude= None , creator_id = current_user.id)
+    lat , long = geocode_address(group_data.meeting_location)
+    print(group_data.meeting_location)
+    print(lat)
+    print(long)
+    group_obj = StudyGroup(**group_data.model_dump() , lat= lat, long= long , creator_id = current_user.id)
 
     db.add(group_obj)
     db.commit()
     db.refresh(group_obj)
+
+    membership = Membership(
+    group_id=group_obj.id,
+    user_id=current_user.id
+    )
+
+    db.add(membership)
+
+    group_obj.total_member = 1
+
+    db.commit()
 
     return group_obj
 
@@ -37,6 +53,17 @@ def view_groups(db:Session=Depends(get_db)):
 
     data = db.query(StudyGroup)
     return data.all()
+
+@router.get("/my", response_model=list[groupDetails])
+def my_groups(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return (
+        db.query(StudyGroup)
+        .filter(StudyGroup.creator_id == current_user.id)
+        .all()
+    )
 
 @router.get('/{group_id}', response_model=groupDetails)
 def get_groups(group_id:int,db:Session= Depends(get_db)):
@@ -133,7 +160,9 @@ def  update_details(group_idd:int ,group_data:groups, db:Session= Depends(get_db
     
     for key , value in group_data.model_dump().items():
         setattr(data,key, value)
-
+    lat , long =geocode_address(group_data.meeting_location)
+    data.lat = lat
+    data.long = long
     db.commit()
     db.refresh(data)
 
@@ -157,13 +186,13 @@ def delete_group(group_idd:int, db : Session=Depends(get_db), current_user : Use
             detail='you are not owner'
         )
     
-    membership_data = db.query(Membership).filter(Membership.group_id==group_idd).all()
-
-    db.delete(membership_data)
+    membership_data = db.query(Membership).filter(Membership.group_id==group_idd).delete()
     db.delete(data)
     db.commit()
 
     return{
         'message': 'group deleted Successfully'
     }
+
+
 

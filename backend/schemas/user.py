@@ -1,12 +1,19 @@
 from pydantic import BaseModel, EmailStr 
-from typing import Literal
+from enum import Enum
+
+class Branch(str,Enum):
+    MIN = 'MIN'
+    CSE='CSE'
+    CIVIL="CIVIL"
+    META="META"  
+
 
 class UserCreate(BaseModel):
     name:str
     email : EmailStr
     password: str
     bio:str
-    branch : Literal['CSE','MIN', 'META', 'CIVIL']
+    branch : Branch
     year:int
     skills:str
     class config:

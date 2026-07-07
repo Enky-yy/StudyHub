@@ -35,7 +35,7 @@ def register( user: UserCreate, db : Session=Depends(get_db)):
             detail='email already exists'
         )
     
-    new_user = User(name=user.name, email=user.email, password = hash_password(user.password),bio = user.bio , branch = user.branch, year = user.year, skills = user.skills  )
+    new_user = User(name=user.name, email= (user.email).lower(), password = hash_password(user.password),bio = user.bio , branch = user.branch, year = user.year, skills = user.skills  )
 
     db.add(new_user)
     db.commit()
@@ -48,7 +48,7 @@ def register( user: UserCreate, db : Session=Depends(get_db)):
 @router.post('/login')
 def login(user:OAuth2PasswordRequestForm=Depends(), db:Session = Depends(get_db)):
 
-    data = db.query(User).filter(user.username==User.email).first()
+    data = db.query(User).filter(user.username.lower()==User.email).first()
 
     if not data:
         raise HTTPException(
