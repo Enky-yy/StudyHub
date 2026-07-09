@@ -1,4 +1,4 @@
-1# 📚 StudyHub
+# 📚 StudyHub
 
 A modern full-stack web application that helps students discover, create, and manage study groups. StudyHub enables learners to collaborate based on shared interests, locate nearby study groups on an interactive map, and organize learning sessions efficiently.
 
